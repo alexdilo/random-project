@@ -87,8 +87,8 @@ copy_files () {
 		if [ -f "$path/$filename" ] 
 			then	
 				new=$(md5sum "$i" | awk '{print $1}')
-				old=$(md5sum $path/$filename |  awk '{print $1}')
- 				if  [ $new == $old ]
+				old=$(md5sum "$path/$filename" |  awk '{print $1}')
+ 				if  [ "$new" == "$old" ]
 					then
 						echo "the file $i already exist $path/$filename "
         					continue
@@ -99,13 +99,15 @@ copy_files () {
         	fi
   		
  		mkdir -p "$path" || { echo "directory creation $path has failed" ; exit 1; }
-		cp -n "$i" "$path/$filename"  || { echo "copy file $i to "$path/$filename" has failed" ; $(killer); }
-        done
-        echo
-        echo                         WARNING
-        echo 
+		cp -n "$i" "$path/$filename" && echo "file $i copied $path/$filename"  || { echo "copy file $i to "$path/$filename" has failed" ; $(killer); }
+ 	done
+
     	if [ -f "/tmp/ignored_files" ]
-		then 
+		then
+		        echo
+        		echo
+        		echo                         WARNING
+        		echo  
 			cat /tmp/ignored_files
 			rm /tmp/ignored_files
         fi
