@@ -8,6 +8,11 @@ delete_cache () {
                 then
                         rm /tmp/ignored_files
         fi
+	if [ -f "/tmp/failed" ]
+                then
+                        rm /tmp/failed
+        fi
+
 }
 
 killer () {
@@ -25,13 +30,17 @@ check_dialog () {
 
 check_dir () {
 	if [ ! -d "$input" ]
- 		then echo "the directory $1 doesn't exist"
+ 		then echo "the directory $input doesn't exist"
                 $(killer)
 	fi
-	if [ ! "$(ls -A $input)" ] 
-  		then echo "the directory $1 is empty"
+	if [ ! "$(ls -A "$input")" ] 
+  		then echo "the directory $input is empty"
                 $(killer)
-	fi 
+	fi
+        if [  -z "$output" ]
+                then echo "please specify the output directory"
+                $(killer)
+        fi 
 }
 
 
@@ -99,7 +108,7 @@ copy_files () {
         	fi
   		
  		mkdir -p "$path" || { echo "directory creation $path has failed" ; exit 1; }
-		cp -n "$i" "$path/$filename" && echo "file $i copied $path/$filename"  || { echo "copy file $i to "$path/$filename" has failed" ; $(killer); }
+		cp -n "$i" "$path/$filename" && echo "file $i copied $path/$filename"  || { echo "copy file $i to "$path/$filename" has failed" 2>&1 >> /tmp/failed ;  }
  	done
 
     	if [ -f "/tmp/ignored_files" ]
@@ -110,6 +119,16 @@ copy_files () {
         		echo  
 			cat /tmp/ignored_files
 			rm /tmp/ignored_files
+        fi
+
+        if [ -f "/tmp/failed" ]
+                then
+                        echo
+                        echo
+                        echo                         WARNING
+                        echo  
+                        cat /tmp/failed
+                        rm /tmp/failed
         fi
 
 }
