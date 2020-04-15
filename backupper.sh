@@ -51,7 +51,7 @@ find_extension () {
 
 
 menu () {
-	cmd=(dialog --separate-output --checklist "Select filetype you wnat to backup:" 22  76 16)
+	cmd=(dialog --separate-output --checklist "Select filetype you want to backup:" 22  76 16)
 	options=( $(echo "$find_extension" | while read num ext ; do echo "$ext" "$num" "off" ; done))
 	extension=($("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty))
                 if [[ -z "$extension"  ]]
