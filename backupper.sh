@@ -140,8 +140,3 @@ find_extension
 menu
 find_files
 copy_files
- 
-#copy_files   
-# new=$(md5sum "$i" | awk '{print $1}')
-# old=$(md5sum $output/$date/$filename)
-
