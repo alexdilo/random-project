@@ -52,7 +52,7 @@ find_extension () {
 date_from_name () {
         date_lower_limt="2000"
  	upperlimit=$(date +%G)
-	date_from_name="$(echo $1 | grep -Po "(19|20)\d\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])" | sed 's/\(....\)\(..\)/\1-\2-/' | cut -d "-" -f1,2)"
+	date_from_name="$(echo "$1" | grep -Po "(19|20)\d\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])" | sed 's/\(....\)\(..\)/\1-\2-/' | cut -d "-" -f1,2)"
 	yyyy="$(echo $date_from_name | cut -d '-' -f1)"
 	if [ ! -z  "$yyyy" ] ; then 
 	        if ! ((  "$yyyy" >= "$date_lower_limt"  && "$yyyy" <= "$upperlimit" )); then
@@ -95,7 +95,7 @@ copy_files () {
 			$(killer)
  		fi
                 date="$(date +%Y-%m -r "$i")"
-		date_from_name $i
+		date_from_name "$i"
 		if [ ! -z "$date_from_name" ]
                         then
                                 date="$date_from_name"
@@ -104,8 +104,8 @@ copy_files () {
  		filename="$(echo $i | rev | cut -d "/" -f1 | rev)"
 		path="$output/$date/$extension"
 		if [[ -z "$path" ||  -z "$date" || -z "$extension" || -z "$filename" ]]
-			then   echo 'one or more variables are undefined' 
-                        $(killer)
+			then   echo "one or more variables are undefined $i" 
+                        continue
  		fi
 		
 		if [ -f "$path/$filename" ] 
@@ -122,8 +122,8 @@ copy_files () {
 
         	fi
   		
- 		mkdir -p "$path" || { echo "directory creation $path has failed" ; exit 1; }
-		cp -n "$i" "$path/$filename" && echo "file $i copied $path/$filename"  || { echo "copy file $i to "$path/$filename" has failed" 2>&1 >> /tmp/failed ;  }
+ 		echo "mkdir" -p "$path" || { echo "directory creation $path has failed" ; exit 1; }
+		echo "cp" -n "$i" "$path/$filename" && echo "file $i copied $path/$filename"  || { echo "copy file $i to "$path/$filename" has failed" 2>&1 >> /tmp/failed ;  }
  	done
 
     	if [ -f "/tmp/ignored_files" ]
