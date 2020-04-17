@@ -50,7 +50,15 @@ find_extension () {
 }
 
 date_from_name () {
-echo $1 | grep -Po "(19|20)\d\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])" | sed 's/\(....\)\(..\)/\1-\2-/' | cut -d "-" -f1,2 
+        date_lower_limt="2000"
+ 	upperlimit=$(date +%G)
+	date_from_name="$(echo $1 | grep -Po "(19|20)\d\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])" | sed 's/\(....\)\(..\)/\1-\2-/' | cut -d "-" -f1,2)"
+	yyyy="$(echo $date_from_name | cut -d '-' -f1)"
+	if [ ! -z  "$yyyy" ] ; then 
+	        if ! ((  "$yyyy" >= "$date_lower_limt"  && "$yyyy" <= "$upperlimit" )); then
+			date_from_name=''
+		fi
+	fi
 }
 
 menu () {
@@ -87,8 +95,8 @@ copy_files () {
 			$(killer)
  		fi
                 date="$(date +%Y-%m -r "$i")"
-		date_from_name="$(date_from_name "$i")"
-		 if [ ! -z "$date_from_name" ]
+		date_from_name $i
+		if [ ! -z "$date_from_name" ]
                         then
                                 date="$date_from_name"
                 fi
