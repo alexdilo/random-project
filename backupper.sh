@@ -1,8 +1,62 @@
 #!/bin/bash
-input=$1
-output=$2
-
 export TOP_PID=$$
+
+
+
+killer () {
+   echo exit from function "${FUNCNAME[ 1 ]}" >&2
+   kill -9 $TOP_PID
+}
+
+
+select_dir () {
+	clear
+	echo 
+	echo
+	echo "*****************************************************"
+	echo "*Select the media directory that contains the fileis*"
+	echo "*****************************************************" 
+	read -p "PRESS ENTER TO CONTINUE"
+	input="$(zenity --file-selection --directory)"
+        if [  -z "$input" ]
+                then
+			clear 
+	                echo "***************************************************"  
+			echo "*please select a directory that you want to backup*"
+ 	                echo "***************************************************"  
+                	$(killer)
+        fi
+	clear
+	echo
+	echo
+	echo "*********************************************************"  
+	echo "*Select the media directory where to copy the files*"
+	echo "*********************************************************"
+	read -p "PRESS ENTER TO CONTINUE"
+	output="$(zenity --file-selection --directory)"
+        if [  -z "$output" ]
+                then
+			clear 
+			echo "**********************************************************************"  
+			echo "*WARNING:Please select a directory where you want to save your backup*"
+                	echo "**********************************************************************"  
+                	$(killer)
+        fi
+	clear
+}
+
+copy_or_move () {
+        exec=(cp copied)
+	clear 
+	echo -e "\n\n"
+	read -p "DO you want to move file instead of copy ? yes/no    " ans
+	if [ "$ans" == "yes" ] 
+		then
+			exec=(mv moved)
+	fi
+}
+
+
 delete_cache () {
         if [ -f "/tmp/ignored_files" ]
                 then
@@ -15,10 +69,6 @@ delete_cache () {
 
 }
 
-killer () {
-   echo exit from function "${FUNCNAME[ 1 ]}"  
-   kill -9 $TOP_PID
-}
 
 check_dialog () {
 	if ! which dialog &> /dev/null ; then
@@ -115,15 +165,23 @@ copy_files () {
  				if  [ "$new" == "$old" ]
 					then
 						echo "the file $i already exist $path/$filename "
-        					continue
+						if [ "$ans" == "yes" ]
+							then	
+								if [ ! "$i" == "$path/$filename" ]
+									then
+										rm "$i"
+										echo "file $i removed"
+								fi
+						fi
+         					continue
 					else
 						echo "IGNORING COPY: the files $i and $path/$filename are different" >> /tmp/ignored_files
 				fi 
 
         	fi
   		
- 		echo "mkdir" -p "$path" || { echo "directory creation $path has failed" ; exit 1; }
-		echo "cp" -n "$i" "$path/$filename" && echo "file $i copied $path/$filename"  || { echo "copy file $i to "$path/$filename" has failed" 2>&1 >> /tmp/failed ;  }
+ 		mkdir -p "$path" || { echo "directory creation $path has failed" ; exit 1; }
+		${exec[0]} -n "$i" "$path/$filename" && echo "file $i ${exec[1]} $path/$filename"  || { echo "copy file $i to "$path/$filename" has failed" 2>&1 >> /tmp/failed ;  }
  	done
 
     	if [ -f "/tmp/ignored_files" ]
@@ -149,7 +207,9 @@ copy_files () {
 }
 
 check_dialog
+select_dir
 check_dir
+copy_or_move
 delete_cache
 find_extension        
 menu
