@@ -1,7 +1,8 @@
 #!/bin/bash
 export TOP_PID=$$
 
-
+input="$1"
+output="$2"
 
 killer () {
    echo exit from function "${FUNCNAME[ 1 ]}" >&2
@@ -10,6 +11,8 @@ killer () {
 
 
 select_dir () {
+  if [  -z "$input" ]
+        then
 	clear
 	echo 
 	echo
@@ -26,6 +29,9 @@ select_dir () {
  	                echo "***************************************************"  
                 	$(killer)
         fi
+  fi 
+  if [  -z "$output" ]
+        then
 	clear
 	echo
 	echo
@@ -43,6 +49,7 @@ select_dir () {
                 	$(killer)
         fi
 	clear
+fi
 }
 
 copy_or_move () {
