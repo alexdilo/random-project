@@ -6,7 +6,8 @@ output="$2"
 
 killer () {
    echo exit from function "${FUNCNAME[ 1 ]}" >&2
-   kill -9 $TOP_PID
+   exit 1 
+   kill  $TOP_PID
 }
 
 
@@ -53,16 +54,15 @@ fi
 }
 
 copy_or_move () {
-        exec=(cp copied)
-	clear 
-	echo -e "\n\n"
-	read -p "DO you want to move file instead of copy ? yes/no    " ans
-	if [ "$ans" == "yes" ] 
-		then
-			exec=(mv moved)
-	fi
+	exec=(cp copied)
+        clear
+        echo -e "\n\n"
+        read -p "DO you want to move file instead of copy ? yes/no    " ans
+        if [ "$ans" == "yes" ]
+                then
+                        exec=(mv moved)
+        fi
 }
-
 
 delete_cache () {
         if [ -f "/tmp/ignored_files" ]
@@ -120,7 +120,7 @@ date_from_name () {
 
 menu () {
 	cmd=(dialog --separate-output --checklist "Select filetype you want to backup:" 22  76 16)
-	options=( $(echo "$find_extension" | while read num ext ; do echo "$ext" "$num" "off" ; done))
+	options=( $(echo "$find_extension" | while read num ext ; do  if [[ ! -z "$num" && ! -z "$ext" ]] ; then echo "$ext" "$num" "off" ; fi ;  done))
 	extension=($("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty))
                 if [[ -z "$extension"  ]]
                         then   echo 'please select one o more extension, a variables is undefined'
@@ -132,26 +132,33 @@ menu () {
 
 find_files() {
 	first=(${extension[0]})
-	filter=$(echo -name *.$first)
-        if [[ -z "$first" ||  -z "$filter" ]]
+        if [[ -z "$first"  ]]
         	then   echo 'one or more variables are undefined'
         	$(killer)
         fi
 	for i in "${extension[@]:1}"
 		do
-		filter=$( echo $filter -o -name *.$i)
+		filter=$( echo $filter -o -name \*.$i)
+		echo "DEBUG filter is= $filter"
  	done
-	files="$(find "$input"  -type f $filter)"
+	files="$(find "$input"  -type f -name \*.$first $filter)"
 }
 
 copy_files () {
 	echo "$files" | while read i
 	do      
                 if [ -z "$i" ] 
-			then "files are not defined in funcion $FUNCNAME" 
+			then echo "files are not defined in funcion $FUNCNAME"
 			$(killer)
+			exit 1
  		fi
                 date="$(date +%Y-%m -r "$i")"
+                if [ -z "$date" ]
+                        then echo "date is not defined in funcion $FUNCNAME" 
+                        $(killer)
+			exit 1 
+                fi
+
 		date_from_name "$i"
 		if [ ! -z "$date_from_name" ]
                         then
@@ -222,4 +229,3 @@ find_extension
 menu
 find_files
 copy_files
-
