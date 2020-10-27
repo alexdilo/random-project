@@ -248,7 +248,7 @@ type_extension
 	if [ -z "$extension" ] ;
 		then
 			
-			ffind_extension        
+			find_extension        
 			menu
 		fi
 find_files
