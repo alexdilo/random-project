@@ -103,7 +103,7 @@ check_dir () {
 
 
 find_extension () {
-	find_extension=$(find "$input" -type f | rev |  cut -d "/" -f1 | cut -s -d "." -f1 | rev | sort | uniq -c | sort -n)
+	find_extension=$(find "$input" -type f | rev |  cut -d "/" -f1 | cut -s -d "." -f1 | rev | sort | grep -v ' ' | grep -v '[^a-zA-Z0-9 \t]' |  uniq -c | sort -n)
 }
 
 date_from_name () {
