@@ -53,6 +53,16 @@ select_dir () {
 fi
 }
 
+
+type_extension () {
+	echo "Type the file extension you want to backup or leave blank for autodiscovery"
+	read -a  extension 
+}
+
+
+
+
+
 copy_or_move () {
 	exec=(cp copied)
         clear
@@ -119,11 +129,19 @@ date_from_name () {
 }
 
 menu () {
+                if [[ -z "$find_extension"  ]]
+	                then   echo "one or more variables are undefined in funcion $FUNCNAME"
+			exit 1
+                        $(killer)
+                fi
+
 	cmd=(dialog --separate-output --checklist "Select filetype you want to backup:" 22  76 16)
 	options=( $(echo "$find_extension" | while read num ext ; do  if [[ ! -z "$num" && ! -z "$ext" ]] ; then echo "$ext" "$num" "off" ; fi ;  done))
 	extension=($("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty))
+
                 if [[ -z "$extension"  ]]
-                        then   echo 'please select one o more extension, a variables is undefined'
+                        then   echo "one or more variables are undefined in funcion $FUNCNAME"
+			exit 1 
                         $(killer)
                 fi
 }
@@ -133,13 +151,12 @@ menu () {
 find_files() {
 	first=(${extension[0]})
         if [[ -z "$first"  ]]
-        	then   echo 'one or more variables are undefined'
+        	then   echo "one or more variables are undefinedi in funcion $FUNCNAME"
         	$(killer)
         fi
 	for i in "${extension[@]:1}"
 		do
 		filter=$( echo $filter -o -name \*.$i)
-		echo "DEBUG filter is= $filter"
  	done
 	files="$(find "$input"  -type f -name \*.$first $filter)"
 }
@@ -174,8 +191,8 @@ copy_files () {
 		
 		if [ -f "$path/$filename" ] 
 			then	
-				new=$(md5sum "$i" | awk '{print $1}')
-				old=$(md5sum "$path/$filename" |  awk '{print $1}')
+				new=$(md5sum "$i" | awk '{print $1}') 
+				old=$(md5sum "$path/$filename" |  awk '{print $1}') 
  				if  [ "$new" == "$old" ]
 					then
 						echo "the file $i already exist $path/$filename "
@@ -195,17 +212,19 @@ copy_files () {
         	fi
   		
  		mkdir -p "$path" || { echo "directory creation $path has failed" ; exit 1; }
-		${exec[0]} -n "$i" "$path/$filename" && echo "file $i ${exec[1]} $path/$filename"  || { echo "copy file $i to "$path/$filename" has failed" 2>&1 >> /tmp/failed ;  }
+		${exec[0]} -n "$i" "$path/$filename" && echo "file $i ${exec[1]} $path/$filename"  || { echo "copy file $i to "$path/$filename" has failed" 2>&1 >> /tmp/failed ;  }  
  	done
+}
 
-    	if [ -f "/tmp/ignored_files" ]
-		then
-		        echo
-        		echo
-        		echo                         WARNING
-        		echo  
-			cat /tmp/ignored_files
-			rm /tmp/ignored_files
+warning() {
+        if [ -f "/tmp/ignored_files" ]
+                then
+                        echo
+                        echo
+                        echo                         WARNING
+                        echo  
+                        cat /tmp/ignored_files
+                        rm /tmp/ignored_files
         fi
 
         if [ -f "/tmp/failed" ]
@@ -217,7 +236,6 @@ copy_files () {
                         cat /tmp/failed
                         rm /tmp/failed
         fi
-
 }
 
 check_dialog
@@ -225,7 +243,14 @@ select_dir
 check_dir
 copy_or_move
 delete_cache
-find_extension        
-menu
+type_extension
+
+	if [ -z "$extension" ] ;
+		then
+			
+			ffind_extension        
+			menu
+		fi
 find_files
 copy_files
+warning
