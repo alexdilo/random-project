@@ -3,6 +3,8 @@ export TOP_PID=$$
 
 input="$1"
 output="$2"
+extension=("$3")
+exec=("$4")
 
 killer () {
    echo exit from function "${FUNCNAME[ 1 ]}" >&2
@@ -55,8 +57,11 @@ fi
 
 
 type_extension () {
+  if [ -z "$extension" ]
+     then
 	echo "Type the file extension you want to backup or leave blank for autodiscovery"
 	read -a  extension 
+    fi
 }
 
 
@@ -64,6 +69,8 @@ type_extension () {
 
 
 copy_or_move () {
+  if [ -z "$exec" ]
+     then
 	exec=(cp copied)
         clear
         echo -e "\n\n"
@@ -72,6 +79,7 @@ copy_or_move () {
                 then
                         exec=(mv moved)
         fi
+    fi
 }
 
 delete_cache () {
