@@ -3,8 +3,8 @@ export TOP_PID=$$
 
 input="$1"
 output="$2"
-extension=($3)
-exec=($4)
+extension=("$3")
+exec=("$4")
 
 killer () {
    echo exit from function "${FUNCNAME[ 1 ]}" >&2
@@ -169,37 +169,19 @@ find_files() {
 	files="$(find "$input"  -type f -name \*.$first $filter)"
 }
 
+
 sort_dir() {
         for i in "${extension[@]}"
 		do 
-			echo "$files" | grep ".$i" | rev | cut -d "/" -f2- | rev | sort | uniq -c | sort -n |
+			echo "$files" | rev | cut -d "/" -f2- | rev | sort | uniq -c | sort -n |
 			while read path 
 				do echo ["$i"] "$path" 
-			done 
-		done 
-}		
-
-menu_dir() {
-        cmd=(dialog --separate-output --checklist "Select dir you want to exlude:" 100  200 100)
-        options=($( sort_dir | while read  ext num path ; do  echo "$num-$path" "$ext" "on" ;  done))
-        dir=($("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty))
-        for i in  "${dir[@]}"
-		do echo "$i" | cut -d "-" -f2- 
-	done | sort | uniq 
-}
-
-
-dir_filter() {
-	filter_dir="grep -v"
-	for i in `menu_dir`
-		do 
-			filter_dir=$(echo "$filter_dir -e $i")
+			done
 		done
-echo "$filter_dir"
 }
 
-copy_files () {	
-	echo "$files" | $filter_dir |  while read i
+copy_files () {
+	echo "$files" | while read i
 	do      
                 if [ -z "$i" ] 
 			then echo "files are not defined in funcion $FUNCNAME"
@@ -289,8 +271,6 @@ type_extension
 			menu
 		fi
 find_files
-#sort_dir
-#menu_dir
-dir_filter
-copy_files
+sort_dir
+#copy_files
 #warning
