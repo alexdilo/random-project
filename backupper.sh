@@ -204,10 +204,14 @@ dir_filter() {
 			filter_dir+=("-e")
 			filter_dir+=("$i")
 		done <<< `menu_dir`
+
+	if [ ! ${#filter_dir[@]} -eq 0 ]
+		then
+			files="$(echo "$files" | grep -v "${filter_dir[@]}")"
+		fi
 }
 
 copy_files () {
-	echo "$files" | grep -v "${filter_dir[@]}" | 
 	while read i
 	do      
                 if [ -z "$i" ] 
@@ -259,7 +263,7 @@ copy_files () {
   		
  		mkdir -p "$path" || { echo "directory creation $path has failed" ; exit 1; }
 		${exec[0]} -n "$i" "$path/$filename" && echo "file $i ${exec[1]} $path/$filename"  || { echo "copy file $i to "$path/$filename" has failed" 2>&1 >> /tmp/failed ;  }  
- 	done
+ 	done <<< "$files" 
 }
 
 warning() {
