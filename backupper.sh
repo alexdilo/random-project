@@ -199,19 +199,20 @@ menu_dir() {
 
 
 dir_filter() {
-	while read i 
-		do     
-			filter_dir+=("-e")
-			filter_dir+=("$i")
-		done <<< `menu_dir`
-
-	if [ ! ${#filter_dir[@]} -eq 0 ]
-		then
-			files="$(echo "$files" | grep -v "${filter_dir[@]}")"
-		fi
+	menu_dir="$(menu_dir)"
+	if [ ! -z "$menu_dir" ]
+		then 
+			while read i 
+				do     
+					filter_dir+=("-e")
+					filter_dir+=("$i")
+					done <<< "$menu_dir"
+       					files="$(echo "$files" | grep -v "${filter_dir[@]}")"
+	fi
 }
 
 copy_files () {
+	clear
 	while read i
 	do      
                 if [ -z "$i" ] 
