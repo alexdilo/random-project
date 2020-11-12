@@ -20,16 +20,16 @@ select_dir () {
 	echo 
 	echo
 	echo "*****************************************************"
-	echo "*Select the media directory that contains the fileis*"
+	echo "*Select the media directory that contains the files *"
 	echo "*****************************************************" 
 	read -p "PRESS ENTER TO CONTINUE"
 	input="$(zenity --file-selection --directory)"
         if [  -z "$input" ]
                 then
 			clear 
-	                echo "***************************************************"  
-			echo "*please select a directory that you want to backup*"
- 	                echo "***************************************************"  
+	                echo "********************************************"  
+			echo "*Select a directory that you want to backup*"
+ 	                echo "********************************************"  
                 	$(killer)
         fi
   fi 
@@ -38,9 +38,9 @@ select_dir () {
 	clear
 	echo
 	echo
-	echo "*********************************************************"  
+	echo "****************************************************"  
 	echo "*Select the media directory where to copy the files*"
-	echo "*********************************************************"
+	echo "****************************************************"
 	read -p "PRESS ENTER TO CONTINUE"
 	output="$(zenity --file-selection --directory)"
         if [  -z "$output" ]
@@ -159,7 +159,7 @@ menu () {
 find_files() {
 	first=(${extension[0]})
         if [[ -z "$first"  ]]
-        	then   echo "one or more variables are undefinedi in funcion $FUNCNAME"
+        	then   echo "one or more variables are undefined in funcion $FUNCNAME"
         	$(killer)
         fi
 	for i in "${extension[@]:1}"
@@ -173,16 +173,25 @@ sort_dir() {
         for i in "${extension[@]}"
 		do 
 			echo "$files" | grep ".$i" | rev | cut -d "/" -f2- | rev | sort | uniq -c | sort -n |
-			while read path 
-				do echo ["$i"] "$path" 
+			while read num path 
+				do 
+					#path="$(echo "$path" | sed 's/ />/g')"
+					echo ["$i"] "$num" "$path" 
 			done 
 		done 
 }		
 
 menu_dir() {
+        options=()
         cmd=(dialog --separate-output --checklist "Select dir you want to exlude:" 100  200 100)
-        options=($( sort_dir | while read  ext num path ; do  echo "$num-$path" "$ext" "on" ;  done))
-        dir=($("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty))
+        while read ext num path 
+		do 
+				options+=("$num-$path")
+				options+=("$ext")
+				options+=('off')
+		done <<< `sort_dir` 
+
+        dir=("$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)")
         for i in  "${dir[@]}"
 		do echo "$i" | cut -d "-" -f2- 
 	done | sort | uniq 
@@ -190,16 +199,16 @@ menu_dir() {
 
 
 dir_filter() {
-	filter_dir="grep -v"
-	for i in `menu_dir`
-		do 
-			filter_dir=$(echo "$filter_dir -e $i")
-		done
-echo "$filter_dir"
+	while read i 
+		do     
+			filter_dir+=("-e")
+			filter_dir+=("$i")
+		done <<< `menu_dir`
 }
 
-copy_files () {	
-	echo "$files" | $filter_dir |  while read i
+copy_files () {
+	echo "$files" | grep -v "${filter_dir[@]}" | 
+	while read i
 	do      
                 if [ -z "$i" ] 
 			then echo "files are not defined in funcion $FUNCNAME"
@@ -289,8 +298,6 @@ type_extension
 			menu
 		fi
 find_files
-#sort_dir
-#menu_dir
 dir_filter
 copy_files
-#warning
+warning
