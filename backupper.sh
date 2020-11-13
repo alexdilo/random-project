@@ -212,7 +212,7 @@ dir_filter() {
 }
 
 copy_files () {
-	clear
+#	clear
 	while read i
 	do      
                 if [ -z "$i" ] 
@@ -257,35 +257,34 @@ copy_files () {
 						fi
          					continue
 					else
-						echo "IGNORING COPY: the files $i and $path/$filename are different" >> /tmp/ignored_files
+						ignored="$(echo -e "$ignored\n" "IGNORING COPY: the files $i and $path/$filename are different")"
+						continue
 				fi 
 
         	fi
   		
  		mkdir -p "$path" || { echo "directory creation $path has failed" ; exit 1; }
-		${exec[0]} -n "$i" "$path/$filename" && echo "file $i ${exec[1]} $path/$filename"  || { echo "copy file $i to "$path/$filename" has failed" 2>&1 >> /tmp/failed ;  }  
+		${exec[0]} -n "$i" "$path/$filename" && echo "file $i ${exec[1]} $path/$filename"  || failure="$(echo -e "$failure\n" "copy file $i to $path/$filename has failed" 2>&1 )"  
  	done <<< "$files" 
 }
 
 warning() {
-        if [ -f "/tmp/ignored_files" ]
+        if [ ! -z "$ignored" ]
                 then
                         echo
                         echo
                         echo                         WARNING
                         echo  
-                        cat /tmp/ignored_files
-                        rm /tmp/ignored_files
+                        echo "$ignored"
         fi
 
-        if [ -f "/tmp/failed" ]
+        if [ ! -z "$failure" ]
                 then
                         echo
                         echo
                         echo                         WARNING
                         echo  
-                        cat /tmp/failed
-                        rm /tmp/failed
+                        echo "$failure"
         fi
 }
 
