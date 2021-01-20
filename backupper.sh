@@ -175,7 +175,6 @@ sort_dir() {
 			echo "$files" | grep ".$i" | rev | cut -d "/" -f2- | rev | sort | uniq -c | sort -n |
 			while read num path 
 				do 
-					#path="$(echo "$path" | sed 's/ />/g')"
 					echo ["$i"] "$num" "$path" 
 			done 
 		done 
@@ -186,14 +185,14 @@ menu_dir() {
         cmd=(dialog --separate-output --checklist "Select dir you want to exlude:" 100  200 100)
         while read ext num path 
 		do 
-				options+=("$num-$path")
+				options+=("$num|$path")
 				options+=("$ext")
 				options+=('off')
-		done <<< `sort_dir` 
+		done <<< "`sort_dir`" 
 
         dir=("$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)")
         for i in  "${dir[@]}"
-		do echo "$i" | cut -d "-" -f2- 
+		do echo "$i" | cut -d "|" -f2- 
 	done | sort | uniq 
 }
 
