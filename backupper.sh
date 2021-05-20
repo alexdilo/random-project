@@ -103,6 +103,13 @@ check_dialog () {
 }
 
 
+check_exiftool () {
+        if ! which exiftool &> /dev/null ; then
+                echo "you need to install exiftool"
+                exit
+        fi
+}
+
 check_dir () {
 	if [ ! -d "$input" ]
  		then echo "the directory $input doesn't exist"
