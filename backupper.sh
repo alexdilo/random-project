@@ -220,6 +220,7 @@ copy_files () {
 			exit 1
  		fi
                 date="$(date +%Y-%m -r "$i")"
+#              data="$(exiftool -T -createdate  "$i" | awk '{print $1}' |  cut -d ":" -f1,2 | sed 's/:/-/g')"
                 if [ -z "$date" ]
                         then echo "date is not defined in funcion $FUNCNAME" 
                         $(killer)
@@ -263,7 +264,7 @@ copy_files () {
         	fi
   		
  		mkdir -p "$path" || { echo "directory creation $path has failed" ; exit 1; }
-		${exec[0]} -n "$i" "$path/$filename" && echo "file $i ${exec[1]} $path/$filename"  || failure="$(echo -e "$failure\n" "copy file $i to $path/$filename has failed" 2>&1 )"  
+		${exec[0]} -pn "$i" "$path/$filename" && echo "file $i ${exec[1]} $path/$filename"  || failure="$(echo -e "$failure\n" "copy file $i to $path/$filename has failed" 2>&1 )"  
  	done <<< "$files" 
 }
 
